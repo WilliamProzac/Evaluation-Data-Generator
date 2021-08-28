@@ -4,7 +4,7 @@
  * @Author: William
  * @Date: 2021-06-27 10:59:27
  * @LastEditors: William
- * @LastEditTime: 2021-07-25 17:36:50
+ * @LastEditTime: 2021-08-28 17:47:10
  */
 
 #include <opencv2/opencv.hpp>
@@ -19,6 +19,26 @@ using namespace cv;
 
 void imageRotate(const cv::Mat &src, cv::Mat &dst, const double degree, const double scale);
 
+int imageTranslate(const cv::Mat &src, cv::Mat &dst, const int dx, const int dy);
+
+
+int imageTranslate(const cv::Mat &src, cv::Mat &dst, const int x_cordinate, const int y_cordinate)
+{
+	if(src.rows > dst.rows || src.cols > dst.cols) return -1;
+	else if(x_cordinate > dst.cols || y_cordinate > dst.rows) return -1;
+	else{
+		int top_para = y_cordinate - src.rows / 2;
+		int bottom_para = dst.rows - top_para - src.rows;
+
+		int left_para = x_cordinate - src.cols /2;
+		int right_para = dst.cols - left_para - src.cols;
+
+		copyMakeBorder(src,dst,top_para,bottom_para,left_para,right_para,BORDER_CONSTANT,0);
+
+		return 1;
+	}
+
+}
 
 /*图像旋转（以图像中心为旋转中心）*/
 void affine_trans_rotate(cv::Mat& src, cv::Mat& dst, double Angle){
@@ -343,25 +363,30 @@ int main()
 
 	//cv::Mat scale_mat = cv::getRotationMatrix2D(center,angle,1.0);
 
-    for(int i=0; i < 5000; i++)
+    for(int i=0; i < 100; i++)
     {
-		
+		// 图像缩放
         scale += (rand() % 5 - 1);
         if(scale <50) scale = 50;
         else if (scale >200) scale = 200;
         affine_trans_scale(origin_tmp,after_scale,scale/100.0, scale/100.0);
 		
-
+		// 图像旋转
         rotation += (rand() % 7 - 2);
         if(rotation < -90) rotation = -90;
         else if(rotation > 90) rotation = 90;
         affine_trans_rotate(after_scale,after_Rotate,rotation);
         //imageRotate(origin_tmp,after_Rotate,rotation,scale/100.0);
         //origin_tmp = after_Rotate;
+		Delta_x++;
+        //copyMakeBorder(after_Rotate,afterExpand,(480-after_Rotate.rows)/2,(480-after_Rotate.rows)/2,(640-after_Rotate.cols)/2,(640-after_Rotate.cols)/2,BORDER_CONSTANT,0);
+		imageTranslate(after_Rotate,Background,100 + Delta_x, 200);
+		
+		// 如何实现平移
 
-        copyMakeBorder(after_Rotate,afterExpand,(480-after_Rotate.rows)/2,(480-after_Rotate.rows)/2,(640-after_Rotate.cols)/2,(640-after_Rotate.cols)/2,BORDER_CONSTANT,0);
+		
         imshow("change", origin_tmp);
-        imshow("after",afterExpand);
+        imshow("after",Background);
 		cout << "Rotation Angle: "<< rotation << "; Scale factor: " << scale << endl;
         waitKey(100);
 
